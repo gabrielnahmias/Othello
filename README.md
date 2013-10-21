@@ -1,4 +1,5 @@
-#Othello
+<span style="font-size: 36px">Othello</span>
+---
 
 **Othello** (a.k.a., *Reversi*) is a game based on a grid with eight rows and eight columns played between you and the computer by adding pieces of two colors: black and white. At the beginning of the game, there are 4 pieces on the grid—the player with the black pieces is the first one to place his piece on the board. Each player must place a piece in a position such that there exists at least one straight (horizontal, vertical, or diagonal) line between the new piece and another piece of the same color. There must also be one or more contiguous opposite pieces between them.
 
