@@ -212,14 +212,16 @@ class GamePanel extends JPanel implements MouseListener {
 public class Othello extends JFrame implements ActionListener {
 
     // Constants (final static variables)
-    final static int Square_L = 33,         // Length in pixels of a square in the grid
-                     Width = 8 * Square_L,  // Width of the game board
-                     Height = 8 * Square_L; // Width of the game board
-    final static float VER = 0.2f;
+    final static int Square_L = 33,         // Length in pixels of a grid tile.
+                     Width = 8 * Square_L,  // Width of the game board.
+                     Height = 8 * Square_L; // Height of the game board.
+    final static float VER = 0.3f;          // Version
     final static String NAME = "Othello",
                  AUTHOR = "Gabriel Nahmias",
-                 DATE = "October 1st, 2013",
-                 ABOUT = NAME + "\n\nv" + VER + ": " + DATE + "\n" + AUTHOR,
+                 DATE_START = "October 1st, 2013",
+                 DATE_REV = "October 17th, 2013",
+                 REV_HISTORY = "v0.2: October 11th, 2013\nv0.1: " + DATE_START + "\n",
+                 ABOUT = NAME + "\n\nv" + VER + ": " + DATE_REV + "\n" + REV_HISTORY + "\n" + AUTHOR,
                  // Files
                  FILE_DOCS = "docs.html",
                  // Defaults
@@ -236,11 +238,11 @@ public class Othello extends JFrame implements ActionListener {
 
     public Othello() {
         super(NAME);
- 
-        score_black = new JLabel("2"); // Game starts with 2 black pieces.
+        // Game starts with 2 pieces of each color.
+        score_black = new JLabel("2");
         score_black.setForeground(Color.blue);
         score_black.setFont(new Font("Dialog", Font.BOLD, 16));
-        score_white = new JLabel("2"); // Game start with 2 white pieces.
+        score_white = new JLabel("2");
         score_white.setForeground(Color.red);
         score_white.setFont(new Font("Dialog", Font.BOLD, 16));
         board = new GameBoard();
@@ -267,12 +269,9 @@ public class Othello extends JFrame implements ActionListener {
         setResizable(false);
     }
 
-    // voci del menu di primo livello
-    // File Edit Help
-    //
+    // Top-level menu: File, Edit, Help
     void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-
         menuBar.add(buildGameMenu());
         menuBar.add(buildHelpMenu());
         setJMenuBar(menuBar);   
@@ -281,8 +280,7 @@ public class Othello extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         JMenuItem source = (JMenuItem) (e.getSource());
         String action = source.getText();
-        
-        // Handle different actions.
+        // Handle level selection.
         if (action.equals("2")) {
             gpanel.setLevel(2);
         } else if (action.equals("3")) {
@@ -293,6 +291,7 @@ public class Othello extends JFrame implements ActionListener {
             gpanel.setLevel(5);
         } else if (action.equals("6")) {
             gpanel.setLevel(6);
+        // Now, theme selection.
         } else if (action.equals("Classic")) {
             gpanel.setTheme(action);
         } else if (action.equals("Snazzy")) {
@@ -304,17 +303,21 @@ public class Othello extends JFrame implements ActionListener {
 
     protected JMenu buildGameMenu() {
         boolean[] themeCheck = new boolean[]{false, false, false};
-        JMenu game = new JMenu("Options");
-        JMenuItem newWin = new JMenuItem("New");
-
-        level = new JMenu("Level");
-        theme = new JMenu("Theme");
-        JMenuItem undo = new JMenuItem("Undo");
-        hint = new JMenuItem("Hint");
+        JMenu game = new JMenu("Options"),
+              level = new JMenu("Level"),
+              theme = new JMenu("Theme");
+        // For some reason, Java bitches about the Hint menu item being declared final, so whatever.
+        final JMenuItem hint = new JMenuItem("Hint");
+        JMenuItem newWin = new JMenuItem("New"),
+                  quit = new JMenuItem("Quit"),
+                  undo = new JMenuItem("Undo");
+        newWin.setMnemonic('N');
+        undo.setMnemonic('U');
+        hint.setMnemonic('H');
+        quit.setMnemonic('N');
+        // Start off with Undo disabled.
         undo.setEnabled(false);
-        JMenuItem quit = new JMenuItem("Quit");
-
-        // build level sub-menu
+        // Build level sub-menu.
         ButtonGroup group = new ButtonGroup();
         JRadioButtonMenuItem rbMenuItem = new JRadioButtonMenuItem("2");
 
