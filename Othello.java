@@ -4,6 +4,9 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
+import javax.imageio.*;
 import javax.swing.*; 
 import javax.swing.event.*;
 import javax.swing.text.html.*;
@@ -41,8 +44,8 @@ class GamePanel extends JPanel implements MouseListener {
             button_white = new ImageIcon(Othello.class.getResource("btn_white.png"));
             //setBackground(Color.green);
         } else if (gameTheme.equals("Snazzy")) {
-            button_black = new ImageIcon(Othello.class.getResource("btn_blue.jpg"));
-            button_white = new ImageIcon(Othello.class.getResource("btn_red.jpg"));
+            button_black = new ImageIcon(Othello.class.getResource("btn_blue.png"));
+            button_white = new ImageIcon(Othello.class.getResource("btn_red.png"));
             //setBackground(Color.white);
         } else {
             gameTheme = "Plain"; // Base theme "Plain"
@@ -227,9 +230,9 @@ public class Othello extends JFrame implements ActionListener {
                  // Defaults
                  DEF_THEME = "Classic";
 
+    static boolean helpActive = false;
     static GamePanel gpanel;
     static JMenuItem hint;
-    static boolean helpActive = false;
 
     GameBoard board;
     JEditorPane editorPane;
@@ -238,12 +241,19 @@ public class Othello extends JFrame implements ActionListener {
 
     public Othello() {
         super(NAME);
+        try {
+            Image i = ImageIO.read(Othello.class.getResource("game.ico"));
+            setIconImage(i);
+        } catch (Exception e) {
+            System.out.println("Error Loading Game Icon"/* + e.message*/);
+        }
         // Game starts with 2 pieces of each color.
         score_black = new JLabel("2");
-        score_black.setForeground(Color.blue);
+        // TODO: Make the colors of the separate scores change with theme!
+        score_black.setForeground(Color.black);
         score_black.setFont(new Font("Dialog", Font.BOLD, 16));
         score_white = new JLabel("2");
-        score_white.setForeground(Color.red);
+        score_white.setForeground(Color.gray);
         score_white.setFont(new Font("Dialog", Font.BOLD, 16));
         board = new GameBoard();
         gpanel = new GamePanel(board, score_black, score_white, DEF_THEME, 3);
@@ -534,6 +544,7 @@ public class Othello extends JFrame implements ActionListener {
         try {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
         } catch (Exception e) {}
+        // Set window's icon to the game's.
         Othello game = new Othello();
     }
 
