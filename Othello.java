@@ -11,11 +11,10 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.html.*;
 
-
 class GamePanel extends JPanel implements MouseListener {
     GameBoard board;
     int gameLevel;
-    ImageIcon bg_img = new ImageIcon(Othello.class.getResource("bg.jpg")),
+    ImageIcon bg_img = new ImageIcon(Othello.class.getResource(Othello.DIR_IMG + "/bg.jpg")),
               button_black,
               button_white;
     Image bg = bg_img.getImage();
@@ -40,12 +39,12 @@ class GamePanel extends JPanel implements MouseListener {
         hint = null;
         this.gameTheme = gameTheme;
         if (gameTheme.equals("Classic")) {
-            button_black = new ImageIcon(Othello.class.getResource("btn_black.png"));
-            button_white = new ImageIcon(Othello.class.getResource("btn_white.png"));
+            button_black = new ImageIcon(Othello.class.getResource(Othello.DIR_IMG + "/btn_black.png"));
+            button_white = new ImageIcon(Othello.class.getResource(Othello.DIR_IMG + "/btn_white.png"));
             //setBackground(Color.green);
         } else if (gameTheme.equals("Snazzy")) {
-            button_black = new ImageIcon(Othello.class.getResource("btn_blue.png"));
-            button_white = new ImageIcon(Othello.class.getResource("btn_red.png"));
+            button_black = new ImageIcon(Othello.class.getResource(Othello.DIR_IMG + "/btn_blue.png"));
+            button_white = new ImageIcon(Othello.class.getResource(Othello.DIR_IMG + "/btn_red.png"));
             //setBackground(Color.white);
         } else {
             gameTheme = "Plain"; // Base theme "Plain"
@@ -213,11 +212,13 @@ class GamePanel extends JPanel implements MouseListener {
 }
 
 public class Othello extends JFrame implements ActionListener {
-
+    
     // Constants (final static variables)
     final static int Square_L = 33,         // Length in pixels of a grid tile.
                      Width = 8 * Square_L,  // Width of the game board.
-                     Height = 8 * Square_L; // Height of the game board.
+                     Height = 8 * Square_L, // Height of the game board.
+                     // Window properties
+                     WIN_WIDTH = Width + 20;
     final static float VER = 0.3f;          // Version
     final static String NAME = "Othello",
                  AUTHOR = "Gabriel Nahmias",
@@ -225,6 +226,9 @@ public class Othello extends JFrame implements ActionListener {
                  DATE_REV = "October 17th, 2013",
                  REV_HISTORY = "v0.2: October 11th, 2013\nv0.1: " + DATE_START + "\n",
                  ABOUT = NAME + "\n\nv" + VER + ": " + DATE_REV + "\n" + REV_HISTORY + "\n" + AUTHOR,
+                 // Directories
+                 DIR_ETC = "etc",
+                 DIR_IMG = "img",
                  // Files
                  FILE_DOCS = "docs.html",
                  // Defaults
@@ -245,11 +249,11 @@ public class Othello extends JFrame implements ActionListener {
             Image i = ImageIO.read(Othello.class.getResource("game.ico"));
             setIconImage(i);
         } catch (Exception e) {
-            System.out.println("Error Loading Game Icon"/* + e.message*/);
+            System.err.println("Error loading game icon."/* + e.message*/);
         }
         // Game starts with 2 pieces of each color.
-        score_black = new JLabel("2");
         // TODO: Make the colors of the separate scores change with theme!
+        score_black = new JLabel("2");
         score_black.setForeground(Color.black);
         score_black.setFont(new Font("Dialog", Font.BOLD, 16));
         score_white = new JLabel("2");
@@ -257,28 +261,92 @@ public class Othello extends JFrame implements ActionListener {
         score_white.setFont(new Font("Dialog", Font.BOLD, 16));
         board = new GameBoard();
         gpanel = new GamePanel(board, score_black, score_white, DEF_THEME, 3);
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setupMenuBar();
-        gpanel.setMinimumSize(new Dimension(Othello.Width, Othello.Height));
-
+        gpanel.setPreferredSize(new Dimension(WIN_WIDTH, Height));
         JPanel status = new JPanel();
-
+        status.setMaximumSize(new Dimension(WIN_WIDTH, 20));
         status.setLayout(new BorderLayout());
         status.add(score_black, BorderLayout.WEST);
         status.add(score_white, BorderLayout.EAST);
-        // status.setMinimumSize(new Dimension(100, 30));
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, gpanel,
-                status);
-
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, gpanel, status);
         splitPane.setOneTouchExpandable(false);
         getContentPane().add(splitPane);
-
         pack();
+        centerToScreen();
         setVisible(true);
         setResizable(false);
+        createSystemTrayIcon();
     }
+    
+    public static void createSystemTrayIcon() {
 
+        if (SystemTray.isSupported()) {
+            SystemTray tray = SystemTray.getSystemTray();
+            Image image = new ImageIcon(Othello.class.getResource(DIR_IMG + "/game.ico")).getImage();
+            PopupMenu popup = new PopupMenu();
+            final TrayIcon trayIcon = new TrayIcon(image, NAME, popup);
+            final MenuItem menuExit = new MenuItem("Quit");
+
+            MouseListener mouseListener =
+                new MouseListener() {
+                public void mouseClicked(MouseEvent e) {
+                }
+
+                public void mouseEntered(MouseEvent e) {
+                }
+
+                public void mouseExited(MouseEvent e) {
+                }
+
+                public void mousePressed(MouseEvent e) {
+                }
+
+                public void mouseReleased(MouseEvent e) {
+                }
+            };
+
+            ActionListener exitListener =
+                new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Runtime r = Runtime.getRuntime();
+                    System.out.println("Exiting: Fired through tray.");
+                    r.exit(0);
+                }
+            };
+
+            menuExit.addActionListener(exitListener);
+            popup.add(menuExit);
+            
+            ActionListener actionListener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    trayIcon.displayMessage(NAME, "v" + VER, TrayIcon.MessageType.INFO);
+                }
+            };
+
+            trayIcon.setImageAutoSize(true);
+            trayIcon.addActionListener(actionListener);
+            trayIcon.addMouseListener(mouseListener);
+
+            try {
+                tray.add(trayIcon);
+            } catch (AWTException e) {
+                System.err.println("System tray icon could not be added.");
+            }
+
+        } else {
+            //  System Tray is not supported
+        }
+    }
+    
+    void centerToScreen() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Point middle = new Point(screenSize.width / 2, screenSize.height / 2);
+        Point newLocation = new Point(middle.x - (getWidth() / 2),
+                                      middle.y - (getHeight() / 2));
+        setLocation(newLocation);
+    }
+    
     // Top-level menu: File, Edit, Help
     void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
@@ -445,8 +513,7 @@ public class Othello extends JFrame implements ActionListener {
         about.addActionListener(
                 new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ImageIcon icon = new ImageIcon(
-                        Othello.class.getResource("logo.jpg"));
+                ImageIcon icon = new ImageIcon(Othello.class.getResource(DIR_IMG + "/logo.jpg"));
 
                 JOptionPane.showMessageDialog(null, ABOUT, "About " + NAME,
                         JOptionPane.PLAIN_MESSAGE, icon);
